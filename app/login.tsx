@@ -1,0 +1,146 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+} from "react-native";
+import { router } from "expo-router";
+import { useAppDispatch } from "@/store/hooks";
+import { login } from "@/store/slices/authSlice";
+import { User } from "@/store/slices/authSlice";
+
+export default function LoginScreen() {
+  const dispatch = useAppDispatch();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = () => {
+    // Placeholder login - will be replaced with Supabase later
+    const mockUser: User = {
+      uid: "mock-uid-123",
+      name: "John",
+      surname: "Doe",
+      email: email,
+      contactNumber: "+27123456789",
+      address: "123 Main St, City",
+      cardDetails: {
+        cardNumber: "**** **** **** 1234",
+        expiryDate: "12/25",
+        cvv: "***",
+        cardholderName: "John Doe",
+      },
+    };
+    dispatch(login(mockUser));
+    router.back();
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Login</Text>
+        <Text style={styles.subtitle}>Welcome back!</Text>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </View>
+
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Login</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.registerLink}
+          onPress={() => router.push("/register")}
+        >
+          <Text style={styles.registerLinkText}>
+            Don't have an account? Register
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
+  },
+  content: {
+    padding: 20,
+    paddingTop: 40,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#2C2C2E",
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#8E8E93",
+    marginBottom: 30,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#2C2C2E",
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 15,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+  },
+  loginButton: {
+    backgroundColor: "#FF6B35",
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  loginButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  registerLink: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  registerLinkText: {
+    color: "#FF6B35",
+    fontSize: 16,
+  },
+});
+
+
