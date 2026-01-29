@@ -7,12 +7,12 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
+  Alert,
 } from "react-native";
 import { router } from "expo-router";
 import { useAppDispatch } from "@/store/hooks";
 import { login } from "@/store/slices/authSlice";
 import { authService } from "@/services/supabase/auth";
-import { Alert } from "react-native";
 
 export default function RegisterScreen() {
   const dispatch = useAppDispatch();
@@ -65,145 +65,114 @@ export default function RegisterScreen() {
     }
   };
 
+  const handleCancel = () => {
+    router.back();
+  };
+
+  const handleExplore = () => {
+    router.replace("/(tabs)");
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Register</Text>
-        <Text style={styles.subtitle}>Create your account</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Title */}
+        <Text style={styles.pageTitle}>Sign up</Text>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your name"
-            value={formData.name}
-            onChangeText={(text) => setFormData({ ...formData, name: text })}
-          />
-        </View>
+        {/* White Form Panel */}
+        <View style={styles.formPanel}>
+          {/* Header */}
+          <Text style={styles.headerTitle}>Let's get you Signed up</Text>
+          <Text style={styles.headerSubtitle}>
+            Provide your details below to create an account and get started
+          </Text>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Surname</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your surname"
-            value={formData.surname}
-            onChangeText={(text) => setFormData({ ...formData, surname: text })}
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your email"
-            value={formData.email}
-            onChangeText={(text) => setFormData({ ...formData, email: text })}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Contact Number</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your contact number"
-            value={formData.contactNumber}
-            onChangeText={(text) =>
-              setFormData({ ...formData, contactNumber: text })
-            }
-            keyboardType="phone-pad"
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Address</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your address"
-            value={formData.address}
-            onChangeText={(text) => setFormData({ ...formData, address: text })}
-            multiline
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Card Number</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter card number"
-            value={formData.cardNumber}
-            onChangeText={(text) =>
-              setFormData({ ...formData, cardNumber: text })
-            }
-            keyboardType="numeric"
-          />
-        </View>
-
-        <View style={styles.row}>
-          <View style={[styles.inputContainer, { flex: 1, marginRight: 10 }]}>
-            <Text style={styles.label}>Expiry Date</Text>
+          {/* Input Fields */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Name:</Text>
             <TextInput
               style={styles.input}
-              placeholder="MM/YY"
-              value={formData.expiryDate}
-              onChangeText={(text) =>
-                setFormData({ ...formData, expiryDate: text })
-              }
+              placeholder="Enter your name"
+              value={formData.name}
+              onChangeText={(text) => setFormData({ ...formData, name: text })}
+              placeholderTextColor="#999"
             />
           </View>
-          <View style={[styles.inputContainer, { flex: 1 }]}>
-            <Text style={styles.label}>CVV</Text>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Surname:</Text>
             <TextInput
               style={styles.input}
-              placeholder="CVV"
-              value={formData.cvv}
-              onChangeText={(text) => setFormData({ ...formData, cvv: text })}
-              keyboardType="numeric"
+              placeholder="Enter your surname"
+              value={formData.surname}
+              onChangeText={(text) => setFormData({ ...formData, surname: text })}
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              value={formData.email}
+              onChangeText={(text) => setFormData({ ...formData, email: text })}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              value={formData.password}
+              onChangeText={(text) => setFormData({ ...formData, password: text })}
               secureTextEntry
+              placeholderTextColor="#999"
             />
           </View>
+
+          {/* Buttons */}
+          <TouchableOpacity
+            style={[styles.signUpButton, loading && styles.buttonDisabled]}
+            onPress={handleRegister}
+            disabled={loading}
+          >
+            <Text style={styles.signUpButtonText}>
+              {loading ? "Signing up..." : "Sign Up"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              Already have an account?{" "}
+              <Text
+                style={styles.footerLink}
+                onPress={() => router.push("/login")}
+              >
+                Sign in
+              </Text>
+            </Text>
+            <Text style={styles.footerText}>
+              Or{" "}
+              <Text
+                style={styles.footerLink}
+                onPress={handleExplore}
+              >
+                explore
+              </Text>
+              {" "}without signing in
+            </Text>
+          </View>
         </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Cardholder Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter cardholder name"
-            value={formData.cardholderName}
-            onChangeText={(text) =>
-              setFormData({ ...formData, cardholderName: text })
-            }
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter password"
-            value={formData.password}
-            onChangeText={(text) =>
-              setFormData({ ...formData, password: text })
-            }
-            secureTextEntry
-          />
-        </View>
-
-        <TouchableOpacity 
-          style={[styles.registerButton, loading && styles.registerButtonDisabled]} 
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          <Text style={styles.registerButtonText}>{loading ? "Registering..." : "Register"}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.loginLink}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.loginLinkText}>Already have an account? Login</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -214,64 +183,93 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F5F5",
   },
-  content: {
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
-    paddingTop: 40,
   },
-  title: {
-    fontSize: 32,
+  pageTitle: {
+    fontSize: 48,
+    fontWeight: "300",
+    color: "#999999",
+    marginBottom: 20,
+    textAlign: "left",
+  },
+  formPanel: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  headerTitle: {
+    fontSize: 24,
     fontWeight: "700",
-    color: "#2C2C2E",
-    marginBottom: 10,
+    color: "#000000",
+    marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
-    color: "#8E8E93",
-    marginBottom: 30,
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#999999",
+    marginBottom: 24,
   },
   inputContainer: {
     marginBottom: 20,
   },
-  row: {
-    flexDirection: "row",
-  },
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#2C2C2E",
+    color: "#000000",
     marginBottom: 8,
   },
   input: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 15,
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#E5E5E5",
+    color: "#000000",
   },
-  registerButton: {
-    backgroundColor: "#CD7112",
-    paddingVertical: 15,
+  signUpButton: {
+    backgroundColor: "#88B746",
+    paddingVertical: 14,
     borderRadius: 25,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 8,
+    marginBottom: 12,
   },
-  registerButtonText: {
+  signUpButtonText: {
     color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 16,
+    fontWeight: "600",
   },
-  registerButtonDisabled: {
+  cancelButton: {
+    backgroundColor: "#000000",
+    paddingVertical: 14,
+    borderRadius: 25,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  cancelButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  buttonDisabled: {
     opacity: 0.6,
   },
-  loginLink: {
-    marginTop: 20,
+  footer: {
     alignItems: "center",
   },
-  loginLinkText: {
-    color: "#CD7112",
-    fontSize: 16,
+  footerText: {
+    fontSize: 12,
+    color: "#999999",
+  },
+  footerLink: {
+    color: "#88B746",
+    fontWeight: "600",
   },
 });
-
-

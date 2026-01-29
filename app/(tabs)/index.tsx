@@ -46,7 +46,14 @@ export default function HomeScreen() {
       ? items
       : items.filter((item) => item.category === selectedCategory);
 
-  const featuredItems = filteredItems.filter((item) => item.isNew || item.category === selectedCategory);
+  // Featured items: prioritize new items, then show first few items from Mains category, or first few items overall
+  const newItems = items.filter((item) => item.isNew);
+  const mainItems = items.filter((item) => item.category === 'Mains' && !item.isNew).slice(0, 3);
+  const featuredItems = newItems.length > 0 
+    ? newItems.slice(0, 5) // Show up to 5 new items
+    : mainItems.length > 0 
+      ? mainItems // Show main items if no new items
+      : items.slice(0, 3); // Fallback: show first 3 items
 
   return (
     <SafeAreaView style={styles.container}>

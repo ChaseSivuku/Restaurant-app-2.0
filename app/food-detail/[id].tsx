@@ -14,27 +14,76 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
 import { FoodItem } from "@/store/slices/foodSlice";
 import { CartItem } from "@/store/slices/cartSlice";
-import { mockFoodItems } from "@/data/mockFoodData";
+import { foodService } from "@/services/supabase/food";
 
 export default function FoodDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const [foodItem, setFoodItem] = useState<FoodItem | null>(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedSides, setSelectedSides] = useState<string[]>([]);
   const [selectedDrinks, setSelectedDrinks] = useState<string[]>([]);
   const [selectedExtras, setSelectedExtras] = useState<{ name: string; price: number }[]>([]);
   const [removedIngredients, setRemovedIngredients] = useState<string[]>([]);
 
+  // Also check Redux store first (faster)
+  const items = useAppSelector((state) => state.food.items);
+  
   useEffect(() => {
-    const item = mockFoodItems.find((item) => item.id === id);
-    setFoodItem(item || null);
-  }, [id]);
+    const loadFoodItem = async () => {
+      setLoading(true);
+      try {
+        // First check if item is in Redux store
+        const itemFromStore = items.find((item) => item.id === id);
+        if (itemFromStore) {
+          setFoodItem(itemFromStore);
+          setLoading(false);
+          return;
+        }
+        
+        // If not in store, fetch from Supabase
+        const item = await foodService.getFoodItemById(id);
+        if (item) {
+          setFoodItem(item);
+        } else {
+          setFoodItem(null);
+        }
+      } catch (error) {
+        console.error('Error loading food item:', error);
+        setFoodItem(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (id) {
+      loadFoodItem();
+    }
+  }, [id, items]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!foodItem) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text>Food item not found</Text>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Food item not found</Text>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>← Go Back</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
@@ -395,6 +444,27 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    fontSize: 18,
+    color: "#8E8E93",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    color: "#2C2C2E",
+    marginBottom: 20,
+    textAlign: "center",
   },
 });
 

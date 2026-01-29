@@ -101,10 +101,10 @@ const Dashboard = () => {
   const recentOrders = data?.recentOrders || [];
 
   const statCards = [
-    { label: 'Total Orders', value: stats.totalOrders, icon: '📦', color: 'bg-blue-500' },
-    { label: 'Total Revenue', value: `R${stats.totalRevenue?.toLocaleString()}`, icon: '💰', color: 'bg-green-500' },
-    { label: 'Food Items', value: stats.totalFoodItems, icon: '🍔', color: 'bg-orange-500' },
-    { label: 'Active Users', value: stats.activeUsers, icon: '👥', color: 'bg-purple-500' },
+    { label: 'Total Orders', value: stats.totalOrders, icon: '/icons/total-orders.png', color: 'bg-blue-500' },
+    { label: 'Total Revenue', value: `R${stats.totalRevenue?.toLocaleString()}`, icon: '/icons/revenue.png', color: 'bg-green-500' },
+    { label: 'Food Items', value: stats.totalFoodItems, icon: '/icons/food-items.png', color: 'bg-orange-500' },
+    { label: 'Active Users', value: stats.activeUsers, icon: '/icons/active-users.png', color: 'bg-purple-500' },
   ];
 
   return (
@@ -120,8 +120,8 @@ const Dashboard = () => {
                 <p className="text-gray-600 text-sm">{stat.label}</p>
                 <p className="text-2xl font-bold text-gray-800 mt-2">{stat.value}</p>
               </div>
-              <div className={`${stat.color} p-3 rounded-full text-2xl`}>
-                {stat.icon}
+              <div className={`${stat.color} p-3 rounded-full flex items-center justify-center`}>
+                <img src={stat.icon} alt={stat.label} className="w-6 h-6" />
               </div>
             </div>
           </div>

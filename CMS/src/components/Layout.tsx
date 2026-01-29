@@ -1,9 +1,6 @@
-import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 
 const NavItem = ({ item, isActive }: { item: any; isActive: boolean }) => {
-  const [iconError, setIconError] = useState(false);
-
   return (
     <Link
       to={item.path}
@@ -13,16 +10,11 @@ const NavItem = ({ item, isActive }: { item: any; isActive: boolean }) => {
           : ''
       }`}
     >
-      {!iconError ? (
-        <img 
-          src={isActive ? item.icon : item.iconInactive} 
-          alt={item.label}
-          className="w-5 h-5 mr-3"
-          onError={() => setIconError(true)}
-        />
-      ) : (
-        <span className="mr-3 text-xl">{item.emoji}</span>
-      )}
+      <img 
+        src={isActive ? item.icon : item.iconInactive} 
+        alt={item.label}
+        className="w-5 h-5 mr-3"
+      />
       <span>{item.label}</span>
     </Link>
   );
@@ -36,29 +28,25 @@ const Layout = () => {
       path: '/dashboard', 
       label: 'Dashboard', 
       icon: '/icons/home-active.png', 
-      iconInactive: '/icons/home-inactive.png',
-      emoji: '📊'
+      iconInactive: '/icons/home-inactive.png'
     },
     { 
       path: '/food-items', 
       label: 'Food Items', 
       icon: '/icons/order-food-active.png', 
-      iconInactive: '/icons/order-food-inactive.png',
-      emoji: '🍔'
+      iconInactive: '/icons/order-food-inactive.png'
     },
     { 
       path: '/orders', 
       label: 'Orders', 
       icon: '/icons/cart-active.png', 
-      iconInactive: '/icons/cart-inactive.png',
-      emoji: '📦'
+      iconInactive: '/icons/cart-inactive.png'
     },
     { 
       path: '/restaurant-info', 
       label: 'Restaurant Info', 
       icon: '/icons/user-tab-active.png', 
-      iconInactive: '/icons/user-tab-inactive.png',
-      emoji: '🏪'
+      iconInactive: '/icons/user-tab-inactive.png'
     },
   ];
 

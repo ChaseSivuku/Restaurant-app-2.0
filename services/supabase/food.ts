@@ -40,6 +40,12 @@ export const foodService = {
     return Promise.all(data.map(async (item: any) => {
       const categoryName = item.categories?.name || await getCategoryName(item.category_id);
       
+      // Mark items as "new" if created within the last 7 days
+      const createdAt = item.created_at ? new Date(item.created_at) : null;
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const isNew = createdAt && createdAt > sevenDaysAgo;
+      
       return {
         id: item.id,
         name: item.name,
@@ -47,7 +53,7 @@ export const foodService = {
         price: item.price,
         image: getFoodImage(item.name, item.image_url),
         category: categoryName,
-        isNew: false, // You can add a field for this if needed
+        isNew: isNew || false,
         sides: parseJsonField(item.side_options) || [],
         drinks: parseJsonField(item.drink_options) || [],
         extras: parseJsonField(item.extras) || [],
@@ -68,6 +74,12 @@ export const foodService = {
 
     const categoryName = data.categories?.name || await getCategoryName(data.category_id);
 
+    // Mark items as "new" if created within the last 7 days
+    const createdAt = data.created_at ? new Date(data.created_at) : null;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const isNew = createdAt && createdAt > sevenDaysAgo;
+
     return {
       id: data.id,
       name: data.name,
@@ -75,7 +87,7 @@ export const foodService = {
       price: data.price,
       image: getFoodImage(data.name, data.image_url),
       category: categoryName,
-      isNew: false,
+      isNew: isNew || false,
       sides: parseJsonField(data.side_options) || [],
       drinks: parseJsonField(data.drink_options) || [],
       extras: parseJsonField(data.extras) || [],
