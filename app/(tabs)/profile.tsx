@@ -1,11 +1,35 @@
 import React from "react";
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert } from "react-native";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { logout } from "@/store/slices/authSlice";
+import { authService } from "@/services/supabase/auth";
 import { router } from "expo-router";
 
 export default function ProfileScreen() {
   const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await authService.signOut();
+              dispatch(logout());
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Failed to logout");
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -44,6 +68,12 @@ export default function ProfileScreen() {
               onPress={() => router.push("/edit-profile")}
             >
               <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <Text style={styles.logoutButtonText}>Logout</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -114,6 +144,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   editButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  logoutButton: {
+    backgroundColor: "#FF3B30",
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  logoutButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",

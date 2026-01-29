@@ -1,4 +1,4 @@
-import { mockFoodItems } from "@/data/mockFoodData";
+import { foodService } from "@/services/supabase/food";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setFoodItems, setSearchQuery, setSelectedCategory } from "@/store/slices/foodSlice";
 import { router } from "expo-router";
@@ -28,7 +28,17 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
-    dispatch(setFoodItems(mockFoodItems));
+    const loadFoodItems = async () => {
+      try {
+        const items = await foodService.getAllFoodItems();
+        dispatch(setFoodItems(items));
+      } catch (error) {
+        console.error('Error loading food items:', error);
+        // Fallback to empty array on error
+        dispatch(setFoodItems([]));
+      }
+    };
+    loadFoodItems();
   }, [dispatch]);
 
   const filteredItems =
@@ -55,7 +65,7 @@ export default function HomeScreen() {
             <TextInput
               style={styles.searchInput}
               placeholder="eg: egg breakfast"
-              placeholderTextColor="#8E8E93"
+              placeholderTextColor="#666666"
               value={searchQuery}
               onChangeText={(text) => dispatch(setSearchQuery(text))}
             />
@@ -203,11 +213,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     height: 44,
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: "#000",
+    color: "#000000",
+    fontWeight: "500",
+    padding: 0,
   },
   searchIcon: {
     width: 20,

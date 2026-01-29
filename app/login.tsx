@@ -1,15 +1,16 @@
+import { authService } from "@/services/supabase/auth";
 import { useAppDispatch } from "@/store/hooks";
-import { login, User } from "@/store/slices/authSlice";
+import { login } from "@/store/slices/authSlice";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  SafeAreaView,
+  Alert, SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function LoginScreen() {
@@ -17,24 +18,29 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
-    // Placeholder login - will be replaced with Supabase later
-    const mockUser: User = {
-      uid: "mock-uid-123",
-      name: "John",
-      surname: "Doe",
-      email: email,
-      contactNumber: "+27123456789",
-      address: "123 Main St, City",
-      cardDetails: {
-        cardNumber: "**** **** **** 1234",
-        expiryDate: "12/25",
-        cvv: "***",
-        cardholderName: "John Doe",
-      },
-    };
-    dispatch(login(mockUser));
-    router.back();
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.signIn(email, password);
+      const user = await authService.getCurrentUser();
+      if (user) {
+        dispatch(login(user));
+        router.back();
+      } else {
+        Alert.alert("Error", "Failed to load user profile");
+      }
+    } catch (error: any) {
+      Alert.alert("Login Failed", error.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,8 +72,12 @@ export default function LoginScreen() {
           />
         </View>
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginButtonText}>Login</Text>
+        <TouchableOpacity 
+          style={[styles.loginButton, loading && styles.loginButtonDisabled]} 
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.loginButtonText}>{loading ? "Logging in..." : "Login"}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -139,6 +149,9 @@ const styles = StyleSheet.create({
   registerLinkText: {
     color: "#CD7112",
     fontSize: 16,
+  },
+  loginButtonDisabled: {
+    opacity: 0.6,
   },
 });
 

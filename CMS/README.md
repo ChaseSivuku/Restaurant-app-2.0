@@ -1,85 +1,65 @@
-# Restaurant CMS Admin Dashboard
+# CMS - Restaurant Admin Dashboard
 
-A modern admin dashboard for managing restaurant operations, built with React, Vite, and Tailwind CSS.
+## Setup Instructions
 
-## Features
-
-- **Dashboard**: Analytics and data visualization with charts
-- **Food Items Management**: Add, edit, and delete food items
-- **Orders Management**: View and manage customer orders
-- **Restaurant Information**: Update restaurant details and opening hours
-
-## Tech Stack
-
-- React 19
-- TypeScript
-- Vite
-- Tailwind CSS
-- React Router DOM
-- TanStack Query (React Query)
-- Recharts (for charts)
-- Axios (for API calls)
-
-## Getting Started
-
-### Installation
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### Development
+### 2. Configure Environment Variables
+
+Create a `.env` file in the `CMS` directory with your Supabase credentials:
+
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+**To get your Supabase credentials:**
+1. Go to your Supabase project dashboard
+2. Navigate to Settings > API
+3. Copy the "Project URL" and "anon public" key
+
+**Example:**
+```env
+VITE_SUPABASE_URL=https://yujwhmjlhajzkkoixunl.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_key_here
+```
+
+### 3. Run the Development Server
 
 ```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+The CMS will be available at `http://localhost:5173` (or the port shown in the terminal).
 
-### Build
+### 4. Build for Production
 
 ```bash
 npm run build
 ```
 
-### Preview Production Build
+## Features
 
-```bash
-npm run preview
-```
+- **Dashboard**: View statistics, charts, and recent orders
+- **Food Items**: Manage menu items (add, edit, delete)
+- **Orders**: View and update order status
+- **Restaurant Info**: Manage restaurant information
 
-## Project Structure
+## Troubleshooting
 
-```
-CMS/
-├── src/
-│   ├── components/
-│   │   └── Layout.tsx       # Main layout with sidebar navigation
-│   ├── pages/
-│   │   ├── Dashboard.tsx    # Analytics dashboard with charts
-│   │   ├── FoodItems.tsx    # Food items management
-│   │   ├── Orders.tsx       # Orders management
-│   │   └── RestaurantInfo.tsx # Restaurant information management
-│   ├── App.tsx              # Main app component with routing
-│   ├── main.tsx             # Entry point
-│   └── index.css            # Tailwind CSS imports
-├── tailwind.config.js       # Tailwind configuration
-└── package.json
-```
+### Nothing is displaying
 
-## API Integration
+1. **Check if `.env` file exists** in the `CMS` directory
+2. **Verify environment variables** are set correctly
+3. **Check browser console** for any error messages
+4. **Restart the dev server** after creating/updating `.env` file
 
-Currently, the dashboard uses mock data. To integrate with your backend:
+### Supabase Connection Errors
 
-1. Update the API functions in each page component
-2. Configure your API base URL
-3. Add authentication if needed
-4. Replace mock data with actual API calls
-
-## Next Steps
-
-- Connect to Supabase backend
-- Add authentication
-- Implement real API calls
-- Add image upload for food items
-- Add more analytics and reporting features
+- Ensure your Supabase URL and Anon Key are correct
+- Check that your Supabase project is active
+- Verify that Row Level Security (RLS) policies allow access

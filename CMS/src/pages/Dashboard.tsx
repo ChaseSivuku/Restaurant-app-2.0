@@ -1,47 +1,93 @@
 import { useQuery } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { orderService } from '@/services/supabase/orders';
+import { foodService } from '@/services/supabase/food';
+import { supabase } from '@/lib/supabase';
 
-// Mock data - replace with actual API calls
 const fetchDashboardData = async () => {
-  // Simulate API call
+  const [orders, foodItems, users] = await Promise.all([
+    orderService.getAllOrders(),
+    foodService.getAllFoodItems(),
+    supabase.from('profiles').select('id'),
+  ]);
+
+  const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+  // Group orders by day
+  const ordersByDayMap = new Map<string, { orders: number; revenue: number }>();
+  orders.forEach(order => {
+    if (!order.created_at) return;
+    const date = new Date(order.created_at);
+    const dayKey = date.toLocaleDateString('en-US', { weekday: 'short' });
+    const existing = ordersByDayMap.get(dayKey) || { orders: 0, revenue: 0 };
+    ordersByDayMap.set(dayKey, {
+      orders: existing.orders + 1,
+      revenue: existing.revenue + (order.total_amount || 0),
+    });
+  });
+
+  const ordersByDay = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => {
+    const data = ordersByDayMap.get(day) || { orders: 0, revenue: 0 };
+    return { day, ...data };
+  });
+
+  // Group food items by category
+  const categoryMap = new Map<string, number>();
+  foodItems.forEach(item => {
+    const categoryName = item.category_name || 'Other';
+    const count = categoryMap.get(categoryName) || 0;
+    categoryMap.set(categoryName, count + 1);
+  });
+
+  const ordersByCategory = Array.from(categoryMap.entries()).map(([name, value], idx) => ({
+    name,
+    value,
+    color: ['#CD7112', '#E88A3A', '#F5A962', '#FFB88C'][idx % 4],
+  }));
+
+  const recentOrders = orders.slice(0, 5).map(order => ({
+    id: order.id,
+    total: order.total_amount || 0,
+    status: order.order_status || 'pending',
+    date: order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A',
+    customer: order.user_name || order.user_email || `User ${order.user_id.substring(0, 8)}`,
+  }));
+
   return {
     stats: {
-      totalOrders: 1247,
-      totalRevenue: 187450,
-      totalFoodItems: 25,
-      activeUsers: 342,
+      totalOrders: orders.length,
+      totalRevenue,
+      totalFoodItems: foodItems.length,
+      activeUsers: users.data?.length || 0,
     },
-    ordersByDay: [
-      { day: 'Mon', orders: 45, revenue: 6750 },
-      { day: 'Tue', orders: 52, revenue: 7800 },
-      { day: 'Wed', orders: 48, revenue: 7200 },
-      { day: 'Thu', orders: 61, revenue: 9150 },
-      { day: 'Fri', orders: 78, revenue: 11700 },
-      { day: 'Sat', orders: 95, revenue: 14250 },
-      { day: 'Sun', orders: 88, revenue: 13200 },
-    ],
-    ordersByCategory: [
-      { name: 'Mains', value: 45, color: '#CD7112' },
-      { name: 'Starters', value: 20, color: '#E88A3A' },
-      { name: 'Desserts', value: 15, color: '#F5A962' },
-      { name: 'Drinks', value: 20, color: '#FFB88C' },
-    ],
-    recentOrders: [
-      { id: 'ORD-001', customer: 'John Doe', total: 175, status: 'Completed', date: '2024-01-28' },
-      { id: 'ORD-002', customer: 'Jane Smith', total: 120, status: 'Pending', date: '2024-01-28' },
-      { id: 'ORD-003', customer: 'Bob Johnson', total: 95, status: 'Completed', date: '2024-01-27' },
-    ],
+    ordersByDay,
+    ordersByCategory,
+    recentOrders,
   };
 };
 
 const Dashboard = () => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
     queryFn: fetchDashboardData,
   });
 
   if (isLoading) {
     return <div className="text-center py-12">Loading dashboard data...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+          <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Dashboard</h2>
+          <p className="text-red-600 mb-4">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
+          <p className="text-sm text-gray-600">
+            Please check your Supabase configuration in the .env file.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const stats = data?.stats || {
@@ -153,9 +199,9 @@ const Dashboard = () => {
                     <p className="text-xs text-gray-500">{order.date}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-gray-800">R{order.total}</p>
+                    <p className="font-semibold text-gray-800">R{order.total.toFixed(2)}</p>
                     <span className={`text-xs px-2 py-1 rounded ${
-                      order.status === 'Completed' 
+                      order.status === 'completed' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>

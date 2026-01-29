@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 
 const NavItem = ({ item, isActive }: { item: any; isActive: boolean }) => {

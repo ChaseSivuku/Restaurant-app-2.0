@@ -1,15 +1,16 @@
+import { orderService } from "@/services/supabase/orders";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCart } from "@/store/slices/cartSlice";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  SafeAreaView,
+  Alert, SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function CheckoutScreen() {
@@ -20,16 +21,46 @@ export default function CheckoutScreen() {
     user?.address || ""
   );
 
-  const handlePlaceOrder = () => {
-    // Placeholder order placement - will be replaced with Supabase later
-    console.log("Placing order...", {
-      items,
-      total,
-      deliveryAddress,
-      userId: user?.uid,
-    });
-    dispatch(clearCart());
-    router.replace("/(tabs)/orders");
+  const [loading, setLoading] = useState(false);
+
+  const handlePlaceOrder = async () => {
+    if (!user) {
+      Alert.alert("Error", "Please login to place an order");
+      router.push("/login");
+      return;
+    }
+
+    if (!deliveryAddress) {
+      Alert.alert("Error", "Please enter a delivery address");
+      return;
+    }
+
+    if (items.length === 0) {
+      Alert.alert("Error", "Your cart is empty");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await orderService.createOrder(
+        user.uid,
+        items,
+        total,
+        deliveryAddress,
+        {
+          name: user.name,
+          email: user.email,
+          contact: user.contactNumber,
+        }
+      );
+      dispatch(clearCart());
+      Alert.alert("Success", "Order placed successfully!");
+      router.replace("/(tabs)/cart");
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to place order");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -79,8 +110,14 @@ export default function CheckoutScreen() {
           <Text style={styles.totalLabel}>Total:</Text>
           <Text style={styles.totalAmount}>R{total.toFixed(2)}</Text>
         </View>
-        <TouchableOpacity style={styles.placeOrderButton} onPress={handlePlaceOrder}>
-          <Text style={styles.placeOrderButtonText}>Place Order</Text>
+        <TouchableOpacity 
+          style={[styles.placeOrderButton, loading && styles.placeOrderButtonDisabled]} 
+          onPress={handlePlaceOrder}
+          disabled={loading}
+        >
+          <Text style={styles.placeOrderButtonText}>
+            {loading ? "Placing Order..." : "Place Order"}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -188,6 +225,9 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
+  },
+  placeOrderButtonDisabled: {
+    opacity: 0.6,
   },
 });
 

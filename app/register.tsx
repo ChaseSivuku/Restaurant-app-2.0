@@ -11,7 +11,8 @@ import {
 import { router } from "expo-router";
 import { useAppDispatch } from "@/store/hooks";
 import { login } from "@/store/slices/authSlice";
-import { User } from "@/store/slices/authSlice";
+import { authService } from "@/services/supabase/auth";
+import { Alert } from "react-native";
 
 export default function RegisterScreen() {
   const dispatch = useAppDispatch();
@@ -28,24 +29,40 @@ export default function RegisterScreen() {
     password: "",
   });
 
-  const handleRegister = () => {
-    // Placeholder registration - will be replaced with Supabase later
-    const mockUser: User = {
-      uid: "mock-uid-" + Date.now(),
-      name: formData.name,
-      surname: formData.surname,
-      email: formData.email,
-      contactNumber: formData.contactNumber,
-      address: formData.address,
-      cardDetails: {
-        cardNumber: formData.cardNumber,
-        expiryDate: formData.expiryDate,
-        cvv: formData.cvv,
-        cardholderName: formData.cardholderName,
-      },
-    };
-    dispatch(login(mockUser));
-    router.replace("/(tabs)");
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    if (!formData.email || !formData.password || !formData.name || !formData.surname) {
+      Alert.alert("Error", "Please fill in all required fields");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.signUp(formData.email, formData.password, {
+        name: formData.name,
+        surname: formData.surname,
+        contactNumber: formData.contactNumber,
+        address: formData.address,
+        cardDetails: {
+          cardNumber: formData.cardNumber,
+          expiryDate: formData.expiryDate,
+          cvv: formData.cvv,
+          cardholderName: formData.cardholderName,
+        },
+      });
+      const user = await authService.getCurrentUser();
+      if (user) {
+        dispatch(login(user));
+        router.replace("/(tabs)");
+      } else {
+        Alert.alert("Error", "Registration successful but failed to load profile");
+      }
+    } catch (error: any) {
+      Alert.alert("Registration Failed", error.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -173,8 +190,12 @@ export default function RegisterScreen() {
           />
         </View>
 
-        <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-          <Text style={styles.registerButtonText}>Register</Text>
+        <TouchableOpacity 
+          style={[styles.registerButton, loading && styles.registerButtonDisabled]} 
+          onPress={handleRegister}
+          disabled={loading}
+        >
+          <Text style={styles.registerButtonText}>{loading ? "Registering..." : "Register"}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -239,6 +260,9 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
+  },
+  registerButtonDisabled: {
+    opacity: 0.6,
   },
   loginLink: {
     marginTop: 20,

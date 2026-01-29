@@ -11,6 +11,8 @@ import {
 import { router } from "expo-router";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateProfile } from "@/store/slices/authSlice";
+import { authService } from "@/services/supabase/auth";
+import { Alert } from "react-native";
 
 export default function EditProfileScreen() {
   const dispatch = useAppDispatch();
@@ -27,9 +29,17 @@ export default function EditProfileScreen() {
     cardholderName: user?.cardDetails?.cardholderName || "",
   });
 
-  const handleSave = () => {
-    dispatch(
-      updateProfile({
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    if (!user) {
+      Alert.alert("Error", "User not found");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.updateProfile(user.uid, {
         name: formData.name,
         surname: formData.surname,
         email: formData.email,
@@ -41,9 +51,29 @@ export default function EditProfileScreen() {
           cvv: formData.cvv,
           cardholderName: formData.cardholderName,
         },
-      })
-    );
-    router.back();
+      });
+      dispatch(
+        updateProfile({
+          name: formData.name,
+          surname: formData.surname,
+          email: formData.email,
+          contactNumber: formData.contactNumber,
+          address: formData.address,
+          cardDetails: {
+            cardNumber: formData.cardNumber,
+            expiryDate: formData.expiryDate,
+            cvv: formData.cvv,
+            cardholderName: formData.cardholderName,
+          },
+        })
+      );
+      Alert.alert("Success", "Profile updated successfully");
+      router.back();
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -148,8 +178,14 @@ export default function EditProfileScreen() {
           />
         </View>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+        <TouchableOpacity 
+          style={[styles.saveButton, loading && styles.saveButtonDisabled]} 
+          onPress={handleSave}
+          disabled={loading}
+        >
+          <Text style={styles.saveButtonText}>
+            {loading ? "Saving..." : "Save Changes"}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -202,6 +238,9 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
   },
 });
 

@@ -1,51 +1,29 @@
-import { useQuery } from '@tanstack/react-query';
-
-// Mock data - replace with actual API calls
-const fetchOrders = async () => {
-  return [
-    {
-      id: 'ORD-001',
-      customer: 'John Doe',
-      items: ['Beef Cake filled with Chips', 'Coke'],
-      total: 175,
-      status: 'Completed',
-      date: '2024-01-28',
-      address: '123 Main St, City',
-    },
-    {
-      id: 'ORD-002',
-      customer: 'Jane Smith',
-      items: ['Cheeseburger and Chips'],
-      total: 120,
-      status: 'Pending',
-      date: '2024-01-28',
-      address: '456 Oak Ave, City',
-    },
-    {
-      id: 'ORD-003',
-      customer: 'Bob Johnson',
-      items: ['Chicken Strips', 'Lemonade'],
-      total: 95,
-      status: 'Completed',
-      date: '2024-01-27',
-      address: '789 Pine Rd, City',
-    },
-  ];
-};
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { orderService } from '@/services/supabase/orders';
+import type { Order } from '@/services/supabase/orders';
 
 const Orders = () => {
+  const queryClient = useQueryClient();
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['orders'],
-    queryFn: fetchOrders,
+    queryFn: () => orderService.getAllOrders(),
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
+      orderService.updateOrderStatus(orderId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed':
+      case 'completed':
         return 'bg-green-100 text-green-800';
-      case 'Pending':
+      case 'pending':
         return 'bg-yellow-100 text-yellow-800';
-      case 'Cancelled':
+      case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -54,6 +32,21 @@ const Orders = () => {
 
   if (isLoading) {
     return <div className="text-center py-12">Loading orders...</div>;
+  }
+
+  if (updateStatusMutation.isError) {
+    return (
+      <div className="text-center py-12">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+          <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Orders</h2>
+          <p className="text-red-600">
+            {updateStatusMutation.error instanceof Error 
+              ? updateStatusMutation.error.message 
+              : 'Unknown error occurred'}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -88,39 +81,59 @@ const Orders = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {orders.map((order: any) => (
+            {orders.map((order: Order) => (
               <tr key={order.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{order.id}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{order.customer}</div>
-                  <div className="text-sm text-gray-500">{order.address}</div>
+                  <div className="text-sm text-gray-900">
+                    {order.user_name || `User: ${order.user_id}`}
+                  </div>
+                  {order.user_email && (
+                    <div className="text-sm text-gray-500">{order.user_email}</div>
+                  )}
+                  {order.user_contact && (
+                    <div className="text-sm text-gray-500">{order.user_contact}</div>
+                  )}
+                  <div className="text-sm text-gray-400 mt-1">{order.delivery_address}</div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900">
-                    {order.items.map((item: string, idx: number) => (
-                      <div key={idx}>{item}</div>
-                    ))}
+                    {Array.isArray(order.items) ? (
+                      order.items.map((item: any, idx: number) => (
+                        <div key={idx}>{item.name} x{item.quantity}</div>
+                      ))
+                    ) : (
+                      <div>Items data</div>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                  R{order.total}
+                  R{order.total_amount.toFixed(2)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                    {order.status}
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.order_status || 'pending')}`}>
+                    {order.order_status || 'pending'}
                   </span>
+                  {order.payment_status && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      Payment: {order.payment_status}
+                    </div>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {order.date}
+                  {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button className="text-primary hover:text-primary-dark mr-4">
                     View
                   </button>
-                  {order.status === 'Pending' && (
-                    <button className="text-green-600 hover:text-green-900">
+                  {order.order_status === 'pending' && (
+                    <button 
+                      className="text-green-600 hover:text-green-900"
+                      onClick={() => updateStatusMutation.mutate({ orderId: order.id, status: 'completed' })}
+                    >
                       Complete
                     </button>
                   )}
