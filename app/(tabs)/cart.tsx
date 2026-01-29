@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   clearText: {
     fontSize: 16,
-    color: "#FF6B35",
+    color: "#CD7112",
     fontWeight: "600",
   },
   emptyContainer: {
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   shopButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#CD7112",
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 25,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   itemPrice: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#FF6B35",
+    color: "#CD7112",
     marginBottom: 5,
   },
   itemExtras: {
@@ -257,10 +257,10 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#FF6B35",
+    color: "#CD7112",
   },
   checkoutButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#CD7112",
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: "center",

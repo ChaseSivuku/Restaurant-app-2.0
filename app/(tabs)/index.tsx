@@ -1,19 +1,25 @@
-import React, { useEffect, useState } from "react";
+import { mockFoodItems } from "@/data/mockFoodData";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setFoodItems, setSearchQuery, setSelectedCategory } from "@/store/slices/foodSlice";
+import { router } from "expo-router";
+import React, { useEffect } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
+  Dimensions,
   Image,
   SafeAreaView,
+  ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setFoodItems, setSelectedCategory, setSearchQuery } from "@/store/slices/foodSlice";
-import { mockFoodItems } from "@/data/mockFoodData";
-import { router } from "expo-router";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Import logo
+const logoImage = require("@/assets/icons/logo-text-background(1).png");
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
@@ -30,7 +36,7 @@ export default function HomeScreen() {
       ? items
       : items.filter((item) => item.category === selectedCategory);
 
-  const featuredItem = filteredItems.find((item) => item.isNew) || filteredItems[0];
+  const featuredItems = filteredItems.filter((item) => item.isNew || item.category === selectedCategory);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -39,13 +45,10 @@ export default function HomeScreen() {
       <View style={styles.topSection}>
         <View style={styles.searchContainer}>
           <View style={styles.brandContainer}>
-            <Text style={styles.brandText}>
-              <Text style={styles.brandOrange}>Ntally</Text>{" "}
-              <Text style={styles.brandGreen}>Foods</Text>
-            </Text>
             <Image
-              source={require("@/assets/icons/dot.png")}
-              style={styles.leafIcon}
+              source={logoImage}
+              style={styles.logo}
+              resizeMode="contain"
             />
           </View>
           <View style={styles.searchBar}>
@@ -94,39 +97,56 @@ export default function HomeScreen() {
 
       {/* Main Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {featuredItem && (
-          <TouchableOpacity
-            style={styles.featuredCard}
-            onPress={() => router.push(`/food-detail/${featuredItem.id}` as any)}
-          >
-            {featuredItem.isNew && (
-              <View style={styles.newTag}>
-                <Text style={styles.newTagText}>New</Text>
-              </View>
-            )}
-            <Image
-              source={featuredItem.image}
-              style={styles.foodImage}
-              resizeMode="contain"
-            />
-            <View style={styles.foodInfo}>
-              <Text style={styles.foodName}>{featuredItem.name}</Text>
-              <Text style={styles.foodDescription}>{featuredItem.description}</Text>
-              <TouchableOpacity
-                style={styles.orderButton}
-                onPress={() => router.push(`/food-detail/${featuredItem.id}` as any)}
-              >
-                <Text style={styles.orderButtonText}>Order R{featuredItem.price}</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
+        {/* Horizontal Carousel of Featured Items */}
+        {featuredItems.length > 0 && (
+          <View style={styles.carouselContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              pagingEnabled
+              snapToInterval={SCREEN_WIDTH - 32}
+              snapToAlignment="start"
+              decelerationRate="fast"
+              contentContainerStyle={styles.carouselContent}
+            >
+              {featuredItems.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.featuredCard, { width: SCREEN_WIDTH - 32 }]}
+                  onPress={() => router.push(`/food-detail/${item.id}` as any)}
+                  activeOpacity={0.9}
+                >
+                  {item.isNew && (
+                    <View style={styles.newTag}>
+                      <Text style={styles.newTagText}>New</Text>
+                    </View>
+                  )}
+                  <Image
+                    source={item.image}
+                    style={styles.foodImage}
+                    resizeMode="contain"
+                  />
+                  <View style={styles.foodInfo}>
+                    <Text style={styles.foodName}>{item.name}</Text>
+                    <Text style={styles.foodDescription}>{item.description}</Text>
+                    <TouchableOpacity
+                      style={styles.orderButton}
+                      onPress={() => router.push(`/food-detail/${item.id}` as any)}
+                    >
+                      <Text style={styles.orderButtonText}>Order R{item.price}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         )}
 
         {/* Other Food Items */}
         <View style={styles.otherItemsContainer}>
           <Text style={styles.sectionTitle}>More Items</Text>
           {filteredItems
-            .filter((item) => item.id !== featuredItem?.id)
+            .filter((item) => !featuredItems.some((fi) => fi.id === item.id))
             .map((item) => (
               <TouchableOpacity
                 key={item.id}
@@ -160,41 +180,29 @@ const styles = StyleSheet.create({
   },
   topSection: {
     backgroundColor: "#2C2C2E",
-    paddingTop: 10,
-    paddingBottom: 15,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   searchContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingTop: 8,
   },
   brandContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 15,
   },
-  brandText: {
-    fontSize: 20,
-    fontWeight: "700",
-  },
-  brandOrange: {
-    color: "#FF6B35",
-  },
-  brandGreen: {
-    color: "#4CAF50",
-  },
-  leafIcon: {
-    width: 16,
-    height: 16,
-    marginLeft: 5,
+  logo: {
+    width: 140,
+    height: 36,
   },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    height: 48,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    height: 44,
   },
   searchInput: {
     flex: 1,
@@ -209,8 +217,8 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   categoriesContent: {
-    paddingHorizontal: 20,
-    gap: 10,
+    paddingHorizontal: 16,
+    gap: 8,
   },
   categoryButton: {
     backgroundColor: "#FFFFFF",
@@ -220,7 +228,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   categoryButtonActive: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#CD7112",
   },
   categoryText: {
     fontSize: 14,
@@ -233,12 +241,20 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  carouselContainer: {
+    marginVertical: 16,
+  },
+  carouselContent: {
+    paddingHorizontal: 16,
+    gap: 16,
+  },
   featuredCard: {
-    backgroundColor: "#FF6B35",
-    borderRadius: 20,
-    margin: 20,
-    padding: 20,
-    minHeight: 400,
+    backgroundColor: "#CD7112",
+    borderRadius: 16,
+    marginRight: 16,
+    padding: 16,
+    minHeight: 360,
+    maxHeight: 400,
     position: "relative",
   },
   newTag: {
@@ -258,31 +274,35 @@ const styles = StyleSheet.create({
   },
   foodImage: {
     width: "100%",
-    height: 250,
-    marginBottom: 15,
+    height: 220,
+    marginBottom: 12,
   },
   foodInfo: {
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   foodName: {
     color: "#FFFFFF",
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
-    marginBottom: 8,
-    textAlign: "center",
+    marginBottom: 6,
+    textAlign: "left",
+    width: "100%",
   },
   foodDescription: {
     color: "#FFFFFF",
-    fontSize: 14,
-    marginBottom: 20,
-    textAlign: "center",
+    fontSize: 13,
+    marginBottom: 16,
+    textAlign: "left",
     opacity: 0.9,
+    width: "100%",
+    lineHeight: 18,
   },
   orderButton: {
     backgroundColor: "#FFFFFF",
-    paddingHorizontal: 40,
-    paddingVertical: 12,
-    borderRadius: 25,
+    paddingHorizontal: 32,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignSelf: "flex-start",
   },
   orderButtonText: {
     color: "#000",
@@ -290,19 +310,19 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   otherItemsContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
     color: "#2C2C2E",
-    marginBottom: 15,
+    marginBottom: 12,
   },
   foodItemCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 15,
-    marginBottom: 15,
+    borderRadius: 12,
+    marginBottom: 12,
     flexDirection: "row",
     overflow: "hidden",
     shadowColor: "#000",
@@ -312,12 +332,12 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   foodItemImage: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
   },
   foodItemInfo: {
     flex: 1,
-    padding: 15,
+    padding: 12,
     justifyContent: "space-between",
   },
   foodItemName: {
@@ -334,7 +354,7 @@ const styles = StyleSheet.create({
   foodItemPrice: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#FF6B35",
+    color: "#CD7112",
   },
 });
 

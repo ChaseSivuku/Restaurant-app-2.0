@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   loginButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#CD7112",
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 25,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   editButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#CD7112",
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: "center",

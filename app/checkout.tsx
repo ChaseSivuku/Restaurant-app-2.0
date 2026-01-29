@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-  TextInput,
-} from "react-native";
-import { router } from "expo-router";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCart } from "@/store/slices/cartSlice";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function CheckoutScreen() {
   const dispatch = useAppDispatch();
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   changeCardText: {
     fontSize: 16,
-    color: "#FF6B35",
+    color: "#CD7112",
     fontWeight: "600",
   },
   orderItem: {
@@ -176,10 +176,10 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#FF6B35",
+    color: "#CD7112",
   },
   placeOrderButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#CD7112",
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: "center",

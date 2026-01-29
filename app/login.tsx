@@ -1,17 +1,16 @@
+import { useAppDispatch } from "@/store/hooks";
+import { login, User } from "@/store/slices/authSlice";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
   SafeAreaView,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { router } from "expo-router";
-import { useAppDispatch } from "@/store/hooks";
-import { login } from "@/store/slices/authSlice";
-import { User } from "@/store/slices/authSlice";
 
 export default function LoginScreen() {
   const dispatch = useAppDispatch();
@@ -122,7 +121,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E5E5",
   },
   loginButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#CD7112",
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: "center",
@@ -138,7 +137,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   registerLinkText: {
-    color: "#FF6B35",
+    color: "#CD7112",
     fontSize: 16,
   },
 });

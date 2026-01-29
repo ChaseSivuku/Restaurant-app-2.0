@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   foodPrice: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#FF6B35",
+    color: "#CD7112",
     marginBottom: 30,
   },
   section: {
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E5E5",
   },
   optionButtonActive: {
-    borderColor: "#FF6B35",
+    borderColor: "#CD7112",
     backgroundColor: "#FFF5F2",
   },
   optionText: {
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     color: "#2C2C2E",
   },
   optionTextActive: {
-    color: "#FF6B35",
+    color: "#CD7112",
     fontWeight: "600",
   },
   quantityContainer: {
@@ -383,10 +383,10 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#FF6B35",
+    color: "#CD7112",
   },
   addToCartButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#CD7112",
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: "center",

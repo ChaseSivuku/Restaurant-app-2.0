@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ImageSourcePropType } from 'react-native';
 
 export interface FoodItem {
   id: string;
   name: string;
   description: string;
   price: number;
-  image: string;
+  image: ImageSourcePropType;
   category: string;
   isNew?: boolean;
   sides?: { name: string; price: number }[];
