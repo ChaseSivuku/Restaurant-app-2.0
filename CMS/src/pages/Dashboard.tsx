@@ -13,7 +13,7 @@ const fetchDashboardData = async () => {
 
   const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
 
-  // Group orders by day
+  // Grouping orders by day
   const ordersByDayMap = new Map<string, { orders: number; revenue: number }>();
   orders.forEach(order => {
     if (!order.created_at) return;

@@ -38,7 +38,7 @@ const FoodItems = () => {
       description: item.description || '',
       category: item.category_name || 'Mains',
       price: item.price,
-      is_new: false, // Not in schema, keeping for form compatibility
+      is_new: false, 
       image_url: item.image_url || '',
     });
     setIsModalOpen(true);
@@ -210,7 +210,7 @@ const FoodItems = () => {
         </table>
       </div>
 
-      {/* Modal for Add/Edit */}
+      {/* Add/Edit */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">

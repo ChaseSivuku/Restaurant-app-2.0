@@ -9,30 +9,60 @@ export const authService = {
     address: string;
     cardDetails?: any;
   }) {
+    const cardDetails = userData.cardDetails || {};
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
+      // Store profile fields in auth metadata so the DB can create the profile
+      // via a trigger even when client-side inserts are blocked by RLS.
+      options: {
+        data: {
+          name: userData.name,
+          surname: userData.surname,
+          contact_number: userData.contactNumber,
+          address: userData.address,
+          card_last4: cardDetails.last4 || null,
+          card_type: cardDetails.type || null,
+        },
+      },
     });
 
     if (authError) throw authError;
     if (!authData.user) throw new Error('User creation failed');
 
-    // Create user profile
-    const cardDetails = userData.cardDetails || {};
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({
-        id: authData.user.id,
-        email,
-        name: userData.name,
-        surname: userData.surname,
-        contact_number: userData.contactNumber,
-        address: userData.address,
-        card_last4: cardDetails.last4 || null,
-        card_type: cardDetails.type || null,
-      });
+    // If email confirmations are enabled, signUp may not create a session immediately.
+    // In that case a client-side insert will run as `anon` and fail under RLS.
+    const { data: sessionData } = await supabase.auth.getSession();
+    const hasSession = Boolean(sessionData?.session?.user);
 
-    if (profileError) throw profileError;
+    if (hasSession) {
+      // Create user profile (works if your RLS policies allow it).
+      // If you also have a DB trigger to create the profile, this insert can be redundant.
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          email,
+          name: userData.name,
+          surname: userData.surname,
+          contact_number: userData.contactNumber,
+          address: userData.address,
+          card_last4: cardDetails.last4 || null,
+          card_type: cardDetails.type || null,
+        });
+
+      // If RLS blocks the insert, the DB must be updated with a policy/trigger.
+      if (profileError) {
+        const msg = String((profileError as any)?.message || profileError);
+        if (msg.toLowerCase().includes('row-level security')) {
+          throw new Error(
+            'Registration created the auth user, but database security blocked creating the profile. ' +
+            'Add an INSERT RLS policy (and optionally an auth.users trigger) for the profiles table.'
+          );
+        }
+        throw profileError;
+      }
+    }
 
     return authData;
   },
