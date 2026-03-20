@@ -11,6 +11,7 @@ export default {
       supportsTablet: true
     },
     android: {
+      package: "com.restaurantapp20",
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false
     },

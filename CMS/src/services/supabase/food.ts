@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabaseWrite } from '@/lib/supabase';
 
 export interface FoodItem {
   id: string;
@@ -19,12 +19,15 @@ export interface FoodItem {
 
 export const foodService = {
   async getAllFoodItems(): Promise<FoodItem[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseWrite
       .from('menu_items')
       .select('*, categories(name)')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      const msg = [error.message, (error as any).details, (error as any).hint].filter(Boolean).join(' ');
+      throw new Error(msg || 'Failed to load food items');
+    }
     return (data || []).map((item: any) => ({
       ...item,
       category_name: item.categories?.name || null,
@@ -32,13 +35,16 @@ export const foodService = {
   },
 
   async getFoodItemById(id: string): Promise<FoodItem | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseWrite
       .from('menu_items')
       .select('*, categories(name)')
       .eq('id', id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      const msg = [error.message, (error as any).details, (error as any).hint].filter(Boolean).join(' ');
+      throw new Error(msg || 'Failed to load food item');
+    }
     if (!data) return null;
     
     return {
@@ -48,7 +54,7 @@ export const foodService = {
   },
 
   async createFoodItem(item: Omit<FoodItem, 'id' | 'created_at' | 'updated_at' | 'category_name'>) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseWrite
       .from('menu_items')
       .insert({
         name: item.name,
@@ -65,7 +71,10 @@ export const foodService = {
       .select('*, categories(name)')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      const msg = [error.message, (error as any).details, (error as any).hint].filter(Boolean).join(' ');
+      throw new Error(msg || 'Failed to create food item');
+    }
     return {
       ...data,
       category_name: data.categories?.name || null,
@@ -88,14 +97,17 @@ export const foodService = {
     if (updates.extras !== undefined) updateData.extras = updates.extras;
     if (updates.ingredients !== undefined) updateData.ingredients = updates.ingredients;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseWrite
       .from('menu_items')
       .update(updateData)
       .eq('id', id)
       .select('*, categories(name)')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      const msg = [error.message, (error as any).details, (error as any).hint].filter(Boolean).join(' ');
+      throw new Error(msg || 'Failed to update food item');
+    }
     return {
       ...data,
       category_name: data.categories?.name || null,
@@ -103,12 +115,15 @@ export const foodService = {
   },
 
   async deleteFoodItem(id: string) {
-    const { error } = await supabase
+    const { error } = await supabaseWrite
       .from('menu_items')
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      const msg = [error.message, (error as any).details, (error as any).hint].filter(Boolean).join(' ');
+      throw new Error(msg || 'Failed to delete food item');
+    }
   },
 };
 

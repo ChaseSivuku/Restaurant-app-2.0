@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabaseWrite } from '@/lib/supabase';
 
 export interface Order {
   id: string;
@@ -18,17 +18,20 @@ export interface Order {
 
 export const orderService = {
   async getAllOrders(): Promise<Order[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseWrite
       .from('orders')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      const msg = [error.message, (error as any).details, (error as any).hint].filter(Boolean).join(' ');
+      throw new Error(msg || 'Failed to load orders');
+    }
     return (data || []) as Order[];
   },
 
   async updateOrderStatus(orderId: string, status: string) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseWrite
       .from('orders')
       .update({
         order_status: status,
@@ -38,12 +41,15 @@ export const orderService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      const msg = [error.message, (error as any).details, (error as any).hint].filter(Boolean).join(' ');
+      throw new Error(msg || 'Failed to update order status');
+    }
     return data;
   },
 
   async updatePaymentStatus(orderId: string, paymentStatus: string) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseWrite
       .from('orders')
       .update({
         payment_status: paymentStatus,
@@ -53,7 +59,10 @@ export const orderService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      const msg = [error.message, (error as any).details, (error as any).hint].filter(Boolean).join(' ');
+      throw new Error(msg || 'Failed to update payment status');
+    }
     return data;
   },
 };

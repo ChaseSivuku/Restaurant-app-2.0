@@ -5,11 +5,14 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "upload-food-items": "node scripts/upload-food-items.mjs"
+    "upload-food-items": "node scripts/upload-food-items.mjs",
+    "prebuild:android": "expo prebuild --platform android --clean",
+    "build:apk": "expo prebuild --platform android && cd android && gradlew.bat assembleRelease",
+    "build:apk:debug": "expo prebuild --platform android && cd android && gradlew.bat assembleDebug"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

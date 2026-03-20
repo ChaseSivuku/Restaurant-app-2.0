@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { foodService } from '@/services/supabase/food';
 import type { FoodItem } from '@/services/supabase/food';
-import { supabase } from '@/lib/supabase';
+import { supabaseWrite } from '@/lib/supabase';
 
 const FoodItems = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,6 +16,18 @@ const FoodItems = () => {
     image_url: '',
   });
   const queryClient = useQueryClient();
+
+  const getErrorMessage = (err: unknown): string => {
+    if (err instanceof Error) return err.message;
+    if (typeof err === 'object' && err && 'message' in err) {
+      return String((err as any).message);
+    }
+    try {
+      return JSON.stringify(err, null, 2);
+    } catch {
+      return String(err);
+    }
+  };
 
   const { data: foodItems = [], isLoading } = useQuery({
     queryKey: ['foodItems'],
@@ -60,21 +72,23 @@ const FoodItems = () => {
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       // First, get or create category
-      const { data: category } = await supabase
+      const { data: category, error: categoryError } = await supabaseWrite
         .from('categories')
         .select('id')
         .eq('name', data.category)
-        .single();
+        .maybeSingle();
+      if (categoryError) throw new Error(categoryError.message);
       
       let categoryId: string | null = null;
       if (category) {
         categoryId = category.id;
       } else {
-        const { data: newCategory } = await supabase
+        const { data: newCategory, error: newCategoryError } = await supabaseWrite
           .from('categories')
           .insert({ name: data.category })
           .select('id')
           .single();
+        if (newCategoryError) throw new Error(newCategoryError.message);
         if (newCategory) categoryId = newCategory.id;
       }
 
@@ -121,11 +135,12 @@ const FoodItems = () => {
 
   if (deleteMutation.isError || saveMutation.isError) {
     const error = deleteMutation.error || saveMutation.error;
+    console.error('FoodItems mutation failed:', error);
     return (
       <div className="text-center py-12">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
           <h2 className="text-xl font-semibold text-red-800 mb-2">Error</h2>
-          <p className="text-red-600">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
+          <p className="text-red-600 whitespace-pre-wrap">{getErrorMessage(error)}</p>
         </div>
       </div>
     );
